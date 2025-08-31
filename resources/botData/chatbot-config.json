@@ -1,0 +1,16 @@
+{
+    "primaryColor": "#23A267",
+    "chatbotName": "EW Academy AI Assistant",
+    "buttonColor": "#1D7A4B",
+    "backgroundColor": "#111e16",
+    "headerColor": "#172a21",
+    "userBubble": "#2c4636",
+    "botBubble": "#183224",
+    "userText": "#fff",
+    "botText": "#fff",
+    "iconUrl": "./botData/avatar.webp",
+    "botAvatar": "./botData/avatar.webp",
+    "welcomeBubble": "Olá! como podemos te ajudar hoje?",
+    "firstBotMessage": "Me conta, o que você quer saber sobre a EW Academy?",
+    "typingDelay": 0.5
+}
