@@ -25,7 +25,44 @@ export class ChatbotController {
     this.#chatbotView.renderWelcomeBubble();
     this.#chatbotView.setInputEnabled(true);
     this.#chatbotView.appendBotMessage(firstBotMessage, null, false);
-    return this.#promptService.init(text);
+
+    const isDownloadable = await this.#checkIsDownloadable();
+    if (isDownloadable) {
+      this.#chatbotView.appendDownloadMessage();
+      const activateButton = document.querySelector(".ewcb-btn-activate");
+      if (activateButton) {
+        activateButton.addEventListener("click", async () => {
+          if (navigator.userActivation.isActive) {
+            this.#chatbotView.setInputEnabled(false);
+            this.#chatbotView.appendBotMessage("⏳ Baixando o modelo de IA...");
+
+            try {
+              // Tenta inicializar o PromptService novamente
+              this.#chatbotView.showTypingIndicator();
+
+              await this.#promptService.init(text);
+
+              // Avança após download
+              this.#chatbotView.appendBotMessage("✅ Modelo pronto para uso!");
+              this.#chatbotView.appendBotMessage(
+                "Reinicie o Chrome e tente novamente."
+              );
+            } catch (error) {
+              console.error(error);
+              this.#chatbotView.appendBotMessage(
+                "❌ Falha ao baixar o modelo de IA."
+              );
+            } finally {
+              this.#chatbotView.setInputEnabled(true);
+            }
+          } else {
+            console.log("User activation not active.");
+          }
+        });
+      }
+    } else {
+      return this.#promptService.init(text);
+    }
   }
 
   #setupEvents() {
@@ -77,7 +114,7 @@ export class ChatbotController {
       console.log("full Response " + fullResponse);
       stopGenerating();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       this.#chatbotView.hideTypingIndicator();
       if (error.name === "AbortError")
         return console.log("Request abort by user");
@@ -89,6 +126,7 @@ export class ChatbotController {
 
   async #onOpen() {
     const errors = await this.#checkRequirements();
+
     if (errors.length) {
       const messages = errors.join("\n\n");
       this.#chatbotView.appendBotMessage(messages);
@@ -96,14 +134,20 @@ export class ChatbotController {
       this.#chatbotView.setInputEnabled(false);
       return;
     }
+
     this.#chatbotView.setInputEnabled(true);
   }
 
   async #checkRequirements() {
     const errors = [];
     // @ts-ignore
-    const iChrome = window.chrome;
-    if (!iChrome) {
+    // const isChrome = window.chrome ;
+
+    const isChrome = navigator.userAgentData?.brands?.some(
+      (b) => b.brand === "Google Chrome"
+    );
+
+    if (!isChrome) {
       errors.push(
         "⚠️ Este recurso só funciona no Google Chrome ou Chrome Canary (versão recente)."
       );
@@ -117,8 +161,13 @@ export class ChatbotController {
       errors.push("Depois reinicie o Chrome e tente novamente.");
     }
 
-    // console.log(await window.LanguageModel.available());
-
     return errors;
+  }
+
+  async #checkIsDownloadable() {
+    const IsDownloadable =
+      (await window.LanguageModel.availability()) === "downloadable";
+    console.log(IsDownloadable);
+    return IsDownloadable;
   }
 }
