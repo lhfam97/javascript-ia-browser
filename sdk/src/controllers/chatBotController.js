@@ -53,6 +53,7 @@ export class ChatbotController {
                 "❌ Falha ao baixar o modelo de IA."
               );
             } finally {
+              this.#chatbotView.hideTypingIndicator();
               this.#chatbotView.setInputEnabled(true);
             }
           } else {
