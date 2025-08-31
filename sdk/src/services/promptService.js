@@ -16,6 +16,12 @@ export class PromptService {
     this.#session = await LanguageModel.create({
       initialPrompts: this.#messages,
       expectedInputLanguages: ["pt"],
+      monitor(m) {
+        m.addEventListener("downloadprogress", (e) => {
+          const percentage = (e.loaded / e.total) * 100;
+          window.console.log(`Downloaded ${percentage.toFixed(2)}%`);
+        });
+      },
     });
 
     return this.#session;
